@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: ine-price-tracker-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: CRON_SECRET
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: STORE_BASE_URL
+        value: https://demo.inelabteamdev.com
