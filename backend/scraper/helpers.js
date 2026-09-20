@@ -26,17 +26,14 @@ async function dismissCookieOverlay(page, options = {}) {
 
   for (let i = 0; i < maxClicks; i++) {
     try {
-      // Look for a button containing ACCEPT (case insensitive)
-      const acceptBtn = page.getByRole('button', { name: /ACCEPT/i }).first();
-      const declineBtn = page.getByRole('button', { name: /DECLINE/i }).first();
-      
       let clicked = false;
       try {
-        const acceptPromise = acceptBtn.waitFor({ state: 'visible', timeout: 1500 }).then(() => acceptBtn);
-        const declinePromise = declineBtn.waitFor({ state: 'visible', timeout: 1500 }).then(() => declineBtn);
+        const acceptBtn = page.getByRole('button', { name: /ACCEPT/i }).first();
+        const declineBtn = page.getByRole('button', { name: /DECLINE/i }).first();
+        const cookieBtn = acceptBtn.or(declineBtn);
         
-        const btnToClick = await Promise.any([acceptPromise, declinePromise]);
-        await btnToClick.click();
+        await cookieBtn.first().waitFor({ state: 'visible', timeout: 1500 });
+        await cookieBtn.first().click();
         clicked = true;
       } catch {
         // Neither button became visible in time
@@ -64,7 +61,7 @@ async function dismissCookieOverlay(page, options = {}) {
  * 2. The hidden span.amount[data-price] has content
  * 3. The "Updating…" text is gone
  */
-async function waitForPriceLoad(page, timeoutMs = 20000) {
+async function waitForPriceLoad(page, timeoutMs = 45000) {
   const startTime = Date.now();
   try {
     const priceBlock = await page.waitForSelector('.price-block', { timeout: timeoutMs });
@@ -86,7 +83,7 @@ async function waitForPriceLoad(page, timeoutMs = 20000) {
     
     // Wait for the button to be enabled and click it (with a fallback force-click)
     try {
-      await page.waitForSelector('.price-block button', { timeout: 3000 });
+      await page.waitForSelector('.price-block button', { timeout: 10000 });
       await page.waitForFunction(() => {
         const b = document.querySelector('.price-block button');
         return b && !b.disabled;
@@ -372,7 +369,7 @@ async function retryWithBackoff(fn, options = {}) {
  * Handles slow loads and timeouts gracefully.
  */
 async function navigateWithRetry(page, url, options = {}) {
-  const { maxRetries = 2, timeoutMs = 30000 } = options;
+  const { maxRetries = 2, timeoutMs = 60000 } = options;
 
   return retryWithBackoff(
     async () => {
