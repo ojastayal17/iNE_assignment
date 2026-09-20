@@ -32,17 +32,14 @@ async function dismissCookieOverlay(page, options = {}) {
       
       let clicked = false;
       try {
-        await acceptBtn.waitFor({ state: 'visible', timeout: 3000 });
-        await acceptBtn.click();
+        const acceptPromise = acceptBtn.waitFor({ state: 'visible', timeout: 1500 }).then(() => acceptBtn);
+        const declinePromise = declineBtn.waitFor({ state: 'visible', timeout: 1500 }).then(() => declineBtn);
+        
+        const btnToClick = await Promise.any([acceptPromise, declinePromise]);
+        await btnToClick.click();
         clicked = true;
       } catch {
-        try {
-          await declineBtn.waitFor({ state: 'visible', timeout: 3000 });
-          await declineBtn.click();
-          clicked = true;
-        } catch {
-          // Neither button became visible in time
-        }
+        // Neither button became visible in time
       }
 
       if (clicked) {
@@ -383,8 +380,6 @@ async function navigateWithRetry(page, url, options = {}) {
         waitUntil: 'domcontentloaded',
         timeout: timeoutMs,
       });
-      // Wait a bit for React to render
-      await page.waitForTimeout(1000);
     },
     { maxRetries, label: `navigate(${url})` }
   );
