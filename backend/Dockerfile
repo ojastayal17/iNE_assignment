@@ -2,11 +2,13 @@ FROM mcr.microsoft.com/playwright:v1.48.0-noble
 
 WORKDIR /app
 
-COPY package.json ./
+# Skip downloading browsers during npm install since the base image already has them.
+# This prevents Render free-tier builds from running out of memory.
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+
+COPY package*.json ./
 RUN npm install --production
 
 COPY . .
-
-EXPOSE 3001
 
 CMD ["node", "server.js"]
