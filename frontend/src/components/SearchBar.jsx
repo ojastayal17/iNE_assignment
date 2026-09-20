@@ -19,6 +19,7 @@ export default function SearchBar({ onProductTracked }) {
     }
 
     setLoading(true);
+    setShowResults(true);
     try {
       const data = await searchProducts(q.trim());
       setResults(data.products || []);
